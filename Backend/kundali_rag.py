@@ -36,6 +36,19 @@ import logging # Use standard logging
 from pathlib import Path
 from typing import Any, Dict
 
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
+    logging.info("Environment variables loaded from .env file.")
+except ImportError:
+    import os
+    logging.warning("python-dotenv not found. Using system environment variables only.")
+except Exception as e:
+    logging.warning(f"Error loading environment variables: {e}")
+    import os
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', stream=sys.stdout)
 # Suppress noisy logs from libraries if needed
@@ -119,9 +132,10 @@ def _build_vector_store(kb_path: str | Path, store_dir: str | Path = _STORE_DIR,
 
     try:
         logging.info(f"Initializing embeddings with Ollama model: {embed_model}")
-        # Specify base_url if Ollama runs elsewhere, e.g., http://host.docker.internal:11434
-        # Consider adding timeout parameters if needed.
-        embeddings = OllamaEmbeddings(model=embed_model)
+        # Get base URL from environment variable or use default
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        logging.info(f"Using Ollama base URL: {ollama_base_url}")
+        embeddings = OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
 
         logging.info(f"Building Chroma vector store at: {store_dir}")
         # Ensure store directory exists (Chroma might create it, but good practice)
@@ -144,7 +158,10 @@ def _load_vector_store(store_dir: str | Path = _STORE_DIR, embed_model: str = _E
         )
     try:
         logging.info(f"Loading vector store from: {store_dir} using embedding model: {embed_model}")
-        embeddings = OllamaEmbeddings(model=embed_model)
+        # Get base URL from environment variable or use default
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        logging.info(f"Using Ollama base URL: {ollama_base_url}")
+        embeddings = OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
         # Pass path as string to Chroma constructor
         vectordb = Chroma(persist_directory=str(store_dir), embedding_function=embeddings)
         logging.info("Vector store loaded successfully.")
@@ -402,8 +419,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ollama-url",
-        default=None,
-        help="Optional: Base URL for Ollama service if not default (http://localhost:11434)."
+        default=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        help="Base URL for Ollama service. Default from OLLAMA_BASE_URL env var or http://localhost:11434."
     )
     parser.add_argument(
         "--temperature",

@@ -182,7 +182,7 @@ const KundaliForm = () => {
       });
 
       // Make API call to backend
-      const response = await fetch(`http://localhost:8000/kundali?${params.toString()}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/kundali?${params.toString()}`);
 
       if (!response.ok) {
         const errorData = await response.json();

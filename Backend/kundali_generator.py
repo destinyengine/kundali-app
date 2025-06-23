@@ -83,6 +83,19 @@ except ImportError as e:
     print("        pip install pyswisseph fastapi pytz", file=sys.stderr)
     sys.exit(1)
 
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
+    print("[INFO] Environment variables loaded from .env file.")
+except ImportError:
+    import os
+    print("[WARN] python-dotenv not found. Using system environment variables only.")
+except Exception as e:
+    print(f"[WARN] Error loading environment variables: {e}")
+    import os
+
 # Attempt to import Gradio only if graphics are available
 HAS_GRADIO = False
 if HAS_GRAPHICS:
@@ -1355,9 +1368,10 @@ app = FastAPI(
 )
 
 # CORS Middleware for handling cross-origin requests (e.g., from a frontend app)
+frontend_urls = os.getenv("FRONTEND_URL", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust to match your frontend URL
+    allow_origins=frontend_urls,  # Uses environment variable for frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1915,11 +1929,11 @@ def create_gradio_ui() -> gr.Blocks:
 # ============================================================================ #
 # MAIN Execution                                                               #
 # ============================================================================ #
-# Define host and ports (adjust if needed)
-fastapi_host = "127.0.0.1" # Listen only on localhost by default
-fastapi_port = 8000
-gradio_host = "127.0.0.1" # Listen only on localhost by default
-gradio_port = 7860       # Default Gradio port
+# Define host and ports using environment variables
+fastapi_host = os.getenv("FASTAPI_HOST", "127.0.0.1")
+fastapi_port = int(os.getenv("FASTAPI_PORT", "8000"))
+gradio_host = os.getenv("GRADIO_HOST", "127.0.0.1")
+gradio_port = int(os.getenv("GRADIO_PORT", "7860"))
 
 def run_fastapi():
     """Target function to run the FastAPI server using uvicorn."""

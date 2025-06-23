@@ -2,8 +2,9 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Web3AuthProvider } from '@/contexts/Web3AuthContext';
+import { Toaster } from 'sonner';
 import Navbar from '@/components/navbar';
-import Footer from '@/components/footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,11 +30,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </div>
+          <Web3AuthProvider>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-grow">{children}</main>
+            </div>
+            <Toaster />
+          </Web3AuthProvider>
         </ThemeProvider>
       </body>
     </html>

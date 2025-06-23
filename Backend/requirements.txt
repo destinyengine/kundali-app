@@ -11,4 +11,5 @@ gradio
 nepali-datetime 
 langchain_community
 langchain_ollama
+python-dotenv
 # bikram-sambat
