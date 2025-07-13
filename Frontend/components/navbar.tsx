@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Moon, Sun, Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import WalletConnect from "@/components/WalletConnect";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -41,8 +40,6 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <WalletConnect />
-          
           {mounted && (
             <Button
               variant="ghost"

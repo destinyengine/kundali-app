@@ -2,7 +2,6 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Web3AuthProvider } from '@/contexts/Web3AuthContext';
 import { Toaster } from 'sonner';
 import Navbar from '@/components/navbar';
 
@@ -30,13 +29,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Web3AuthProvider>
-            <div className="flex min-h-screen flex-col">
-              <Navbar />
-              <main className="flex-grow">{children}</main>
-            </div>
-            <Toaster />
-          </Web3AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+          </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
