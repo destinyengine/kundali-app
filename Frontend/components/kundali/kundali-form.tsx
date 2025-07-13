@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -239,7 +240,7 @@ const KundaliForm = () => {
                   <div className="space-y-3">
                     <EnhancedDatePicker
                       date={formData.date}
-                      onDateChange={(date) => handleInputChange("date", date)}
+                      onDateChange={(date: Date | undefined) => handleInputChange("date", date)}
                       placeholder="Select your birth date"
                       isBS={formData.isBS}
                     />
@@ -262,7 +263,7 @@ const KundaliForm = () => {
                         <Switch
                           id="calendar-type"
                           checked={formData.isBS}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(checked: boolean) =>
                             handleInputChange("isBS", checked)
                           }
                         />
@@ -282,18 +283,10 @@ const KundaliForm = () => {
                 <div className="space-y-3">
                   <Label htmlFor="time" className="text-sm font-medium">Time of Birth</Label>
                   <div className="space-y-3">
-                    <div className="relative">
-                      <Input
-                        id="time"
-                        type="time"
-                        value={formData.time}
-                        onChange={(e) => handleInputChange("time", e.target.value)}
-                        required
-                        className="pl-10"
-                        step="60"
-                      />
-                      <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    </div>
+                    <TimePicker
+                      value={formData.time}
+                      onChange={(time) => handleInputChange("time", time)}
+                    />
                     <div className="rounded-md bg-green-50 p-3 dark:bg-green-950/20">
                       <p className="text-xs text-green-700 dark:text-green-300">
                         <strong>Tip:</strong> Enter the exact time of birth if known. 
@@ -364,7 +357,7 @@ const KundaliForm = () => {
                   <Label htmlFor="timezone">Timezone</Label>
                   <Select
                     value={formData.timezone}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       handleInputChange("timezone", value)
                     }
                   >
@@ -395,7 +388,7 @@ const KundaliForm = () => {
                 <Label htmlFor="language">Output Language</Label>
                 <Select
                   value={formData.language}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     handleInputChange("language", value)
                   }
                 >
@@ -413,7 +406,7 @@ const KundaliForm = () => {
                 <Switch
                   id="show-chart"
                   checked={formData.showChart}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     handleInputChange("showChart", checked)
                   }
                 />

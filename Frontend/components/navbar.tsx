@@ -46,12 +46,23 @@ const Navbar = () => {
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
+              suppressHydrationWarning
             >
               {theme === "dark" ? (
                 <Sun className="h-[1.2rem] w-[1.2rem]" />
               ) : (
                 <Moon className="h-[1.2rem] w-[1.2rem]" />
               )}
+            </Button>
+          )}
+          {!mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-[1.2rem] w-[1.2rem]" />
             </Button>
           )}
         </div>
