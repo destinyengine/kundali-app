@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   CalendarIcon,
   Clock,
@@ -31,6 +32,19 @@ import {
 } from "@/components/ui/select";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
+
+// Dynamic import for LocationMap to handle SSR issues with Leaflet
+const LocationMap = dynamic(
+  () => import("@/components/ui/location-map").then(mod => ({ default: mod.LocationMap })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] w-full rounded-lg border bg-muted flex items-center justify-center">
+        <p className="text-muted-foreground">Loading map...</p>
+      </div>
+    )
+  }
+);
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import KundaliResults from "@/components/kundali/kundali-results";
@@ -310,21 +324,30 @@ const KundaliForm = () => {
                 <Label htmlFor="place">Place of Birth</Label>
                 <Input
                   id="place"
-                  placeholder="Search for a city or location"
+                  placeholder="Search for a city or location using the map below"
                   value={formData.place}
                   onChange={(e) => handleInputChange("place", e.target.value)}
                   required
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Use the interactive map below to search and select your exact birth location
+                </p>
               </div>
 
-              {/* Map Placeholder */}
-              <div className="relative mt-4 h-[200px] rounded-md border bg-muted">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Map integration would appear here
-                  </p>
-                </div>
-              </div>
+              {/* Map for location selection */}
+              <LocationMap
+                latitude={formData.latitude}
+                longitude={formData.longitude}
+                place={formData.place}
+                onLocationChange={(location) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    place: location.place
+                  }));
+                }}
+              />
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
@@ -337,7 +360,11 @@ const KundaliForm = () => {
                       handleInputChange("latitude", e.target.value)
                     }
                     required
+                    className="font-mono text-sm"
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Auto-filled from map selection
+                  </p>
                 </div>
 
                 <div>
@@ -350,7 +377,11 @@ const KundaliForm = () => {
                       handleInputChange("longitude", e.target.value)
                     }
                     required
+                    className="font-mono text-sm"
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Auto-filled from map selection
+                  </p>
                 </div>
 
                 <div>
