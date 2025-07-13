@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-  const { setTheme, theme } = useTheme();
+  const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,6 +20,27 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Prevent hydration mismatch by showing nothing until mounted
+  if (!mounted) {
+    return (
+      <nav className="sticky top-0 z-50 w-full border-b border-transparent bg-transparent">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-6 w-6" /> {/* Placeholder for icon */}
+              <span className="text-lg font-bold tracking-tight md:text-xl">
+                Destiny Engine
+              </span>
+            </Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10" /> {/* Placeholder for theme button */}
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav
@@ -40,31 +61,18 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              suppressHydrationWarning
-            >
-              {theme === "dark" ? (
-                <Sun className="h-[1.2rem] w-[1.2rem]" />
-              ) : (
-                <Moon className="h-[1.2rem] w-[1.2rem]" />
-              )}
-            </Button>
-          )}
-          {!mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled
-              aria-label="Toggle theme"
-            >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+          >
+            {resolvedTheme === "dark" ? (
               <Sun className="h-[1.2rem] w-[1.2rem]" />
-            </Button>
-          )}
+            ) : (
+              <Moon className="h-[1.2rem] w-[1.2rem]" />
+            )}
+          </Button>
         </div>
       </div>
     </nav>
