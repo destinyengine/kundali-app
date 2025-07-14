@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   icons: {
     icon: '/astrology.png', // Now served from public folder
   },
+  formatDetection: {
+    telephone: false,
+    date: false,
+    email: false,
+    address: false,
+  },
 };
 
 export default function RootLayout({

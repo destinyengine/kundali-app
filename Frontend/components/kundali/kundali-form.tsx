@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
   CalendarIcon,
@@ -91,6 +91,7 @@ const timezones = [
 ];
 
 const KundaliForm = () => {
+  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     date: undefined as Date | undefined,
@@ -108,6 +109,15 @@ const KundaliForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [kundaliData, setKundaliData] = useState<any>(null);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   // BS calendar conversion utilities
   const bsMonths = [
