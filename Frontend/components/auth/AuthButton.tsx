@@ -52,12 +52,18 @@ export const AuthButton: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <Alert className="max-w-md">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="text-sm">
-          {error}
-        </AlertDescription>
-      </Alert>
+      <div className="flex items-center gap-2">
+        <Alert className="max-w-sm p-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            {error.includes("Web3Auth not configured") ? (
+              <>Setup required: Configure Web3Auth Client ID</>
+            ) : (
+              error
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 

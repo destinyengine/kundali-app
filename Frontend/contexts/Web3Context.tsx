@@ -54,15 +54,28 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   const initializeAuth = async () => {
     try {
       setError(null);
-      await initWeb3Auth();
+      console.log("🔄 Starting Web3Auth initialization...");
+      
+      const web3authInstance = await initWeb3Auth();
+      
+      if (!web3authInstance) {
+        setError("Web3Auth not configured. Please set up your Web3Auth Client ID first.");
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("✅ Web3Auth instance ready");
       
       // Check if user is already connected
-      if (web3auth.connected && web3auth.provider) {
+      if (web3authInstance.connected && web3authInstance.provider) {
+        console.log("👤 User already connected, setting user info...");
         await setUserInfo();
+      } else {
+        console.log("👤 No existing user session found");
       }
     } catch (error) {
-      console.error("Web3Auth initialization failed:", error);
-      setError("Failed to initialize authentication. Please refresh the page.");
+      console.error("❌ Web3Auth initialization failed:", error);
+      setError("Authentication service initialization failed. Please refresh the page.");
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +83,7 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
 
   const setUserInfo = async () => {
     try {
-      if (!web3auth.connected || !web3auth.provider) {
+      if (!web3auth || !web3auth.connected || !web3auth.provider) {
         throw new Error("Web3Auth not connected");
       }
 
@@ -142,6 +155,11 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
       
+      if (!web3auth) {
+        setError("Web3Auth not configured. Please set up authentication first.");
+        return;
+      }
+      
       const web3authProvider = await web3auth.connect();
       if (web3authProvider) {
         await setUserInfo();
@@ -158,6 +176,11 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       setError(null);
+      
+      if (!web3auth) {
+        setError("Web3Auth not configured. Please set up authentication first.");
+        return;
+      }
       
       const web3authProvider = await web3auth.connectTo("openlogin", {
         loginProvider: "google"
@@ -179,6 +202,11 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
       
+      if (!web3auth) {
+        setError("Web3Auth not configured. Please set up authentication first.");
+        return;
+      }
+      
       const web3authProvider = await web3auth.connectTo("openlogin", {
         loginProvider: "github"
       });
@@ -197,7 +225,10 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   const disconnect = useCallback(async () => {
     try {
       setError(null);
-      await web3auth.logout();
+      
+      if (web3auth) {
+        await web3auth.logout();
+      }
       
       // Clear state
       setUser(null);
