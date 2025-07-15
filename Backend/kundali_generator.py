@@ -72,15 +72,20 @@ except ImportError:
 try:
     import pytz # Use pytz for timezone handling
     import swisseph as swe  # pyswisseph
-    from fastapi import FastAPI, Query, HTTPException
-    from fastapi.responses import JSONResponse, StreamingResponse
+    from fastapi import FastAPI, Query, HTTPException, Depends, status, Header
+    from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
     from fastapi.middleware.cors import CORSMiddleware
     from pydantic import BaseModel
     from typing import Optional
     import json
+    # Authentication imports
+    import secrets
+    from jose import JWTError, jwt
+    from datetime import datetime, timedelta
+    from database import db_manager, init_database
 except ImportError as e:
     print(f"[ERROR] Core dependency missing: {e}. Please install required packages.", file=sys.stderr)
-    print("        pip install pyswisseph fastapi pytz", file=sys.stderr)
+    print("        pip install pyswisseph fastapi pytz aiosqlite python-jose", file=sys.stderr)
     sys.exit(1)
 
 # Load environment variables
@@ -1359,6 +1364,68 @@ def draw_chart(kundali_result: KundaliResult, lang: str = "en") -> io.BytesIO | 
         return None
 
 # ----------------------------------------------------------------------------
+# Authentication Models and Configuration
+# ----------------------------------------------------------------------------
+
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET", "your-super-secret-jwt-key-change-this")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_DAYS = 30
+
+# Pydantic Models for Authentication
+class UserLogin(BaseModel):
+    address: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    profileImage: Optional[str] = None
+    authMethod: str = "web3"
+
+class UserResponse(BaseModel):
+    id: int
+    address: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    profileImage: Optional[str] = None
+    authMethod: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: str
+    user: UserResponse
+
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
+
+# Authentication utility functions
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(authorization: Optional[str] = Header(None)):
+    """Dependency to get current user from JWT token"""
+    if not authorization:
+        return None
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            return None
+        token_data = TokenData(user_id=user_id)
+    except JWTError:
+        return None
+    
+    user = await db_manager.get_user_by_token(token)
+    return user
+
+# ----------------------------------------------------------------------------
 # FastAPI Application
 # ----------------------------------------------------------------------------
 app = FastAPI(
@@ -1376,6 +1443,109 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize database on startup
+init_database()
+
+# ----------------------------------------------------------------------------
+# Authentication Endpoints
+# ----------------------------------------------------------------------------
+
+@app.post("/api/auth/login", response_model=LoginResponse)
+async def login(user_data: UserLogin):
+    """Handle Web3 wallet and social login"""
+    try:
+        # Validate required fields
+        if not user_data.address:
+            raise HTTPException(status_code=400, detail="Wallet address is required")
+        
+        # Create or update user
+        user_id = await db_manager.create_or_update_user(
+            wallet_address=user_data.address,
+            email=user_data.email,
+            name=user_data.name,
+            profile_image=user_data.profileImage,
+            auth_method=user_data.authMethod
+        )
+        
+        # Generate JWT token
+        token_data = {"user_id": user_id, "wallet_address": user_data.address}
+        access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+        access_token = create_access_token(
+            data=token_data, expires_delta=access_token_expires
+        )
+        
+        # Save session to database
+        expires_at = datetime.utcnow() + access_token_expires
+        await db_manager.create_session(user_id, access_token, expires_at)
+        
+        # Return response
+        user_response = UserResponse(
+            id=user_id,
+            address=user_data.address,
+            email=user_data.email,
+            name=user_data.name,
+            profileImage=user_data.profileImage,
+            authMethod=user_data.authMethod
+        )
+        
+        return LoginResponse(
+            success=True,
+            token=access_token,
+            user=user_response
+        )
+        
+    except Exception as e:
+        print(f"[ERROR] Login failed: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+@app.post("/api/auth/verify")
+async def verify_token(current_user = Depends(get_current_user)):
+    """Verify JWT token and return user info"""
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+    
+    return {
+        "user": {
+            "id": current_user["id"],
+            "address": current_user["wallet_address"],
+            "email": current_user["email"],
+            "name": current_user["name"],
+            "profileImage": current_user["profile_image"],
+            "authMethod": current_user["auth_method"]
+        }
+    }
+
+@app.post("/api/auth/logout")
+async def logout(authorization: Optional[str] = Header(None)):
+    """Logout user by invalidating session"""
+    if authorization:
+        try:
+            token = authorization.replace("Bearer ", "")
+            await db_manager.delete_session(token)
+        except Exception as e:
+            print(f"[WARN] Logout error: {e}")
+    
+    return {"message": "Logged out successfully"}
+
+@app.get("/api/user/readings")
+async def get_user_readings(current_user = Depends(get_current_user)):
+    """Get user's saved kundali readings"""
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    readings = await db_manager.get_user_readings(current_user["id"])
+    return {"readings": readings}
+
+# ----------------------------------------------------------------------------
+# Existing Kundali Endpoints (Enhanced with Auth)
+# ----------------------------------------------------------------------------
 
 # --- Helper for processing API/UI requests ---
 def _process_request(calendar: str, date_str: str, time_str: str, lat: float, lon: float, tz_name: str, lang: str) -> Tuple[KundaliResult | None, datetime | None, str | None]:
@@ -1491,7 +1661,10 @@ async def get_kundali_json(
     lon: float = Query(..., description="Longitude in decimal degrees (e.g., 85.3240)."),
     tz_name: str = Query(..., alias="tz", description="IANA timezone name (e.g., 'Asia/Kathmandu', 'America/New_York')."),
     lang: str = Query("en", enum=["en", "ne"], description="Language for output names ('en' or 'ne')."),
-    chart_img: bool = Query(False, description="Include base64 encoded chart image in the JSON response (requires graphics libraries).")
+    chart_img: bool = Query(False, description="Include base64 encoded chart image in the JSON response (requires graphics libraries)."),
+    save_reading: bool = Query(False, description="Save this reading to user's history (requires authentication)."),
+    place_name: Optional[str] = Query(None, description="Optional place name for the reading."),
+    current_user = Depends(get_current_user)
 ):
     """
     Generates Kundali data (Lagna, Planets, Panchanga, Dashas) and returns it as JSON.
@@ -1533,6 +1706,26 @@ async def get_kundali_json(
         else:
              print("[WARN] Chart image requested but graphics libraries (Matplotlib/Pillow) are not available.")
 
+    # Save reading to database if user is authenticated and requested
+    if save_reading and current_user:
+        try:
+            reading_id = await db_manager.save_kundali_reading(
+                user_id=current_user["id"],
+                birth_date=date,
+                birth_time=time,
+                latitude=lat,
+                longitude=lon,
+                timezone_str=tz_name,
+                place_name=place_name,
+                kundali_data=response_data
+            )
+            response_data["saved_reading_id"] = reading_id
+            print(f"[INFO] Saved kundali reading {reading_id} for user {current_user['id']}")
+        except Exception as e:
+            print(f"[WARN] Failed to save reading: {e}")
+            # Don't fail the request if saving fails
+    elif save_reading and not current_user:
+        response_data["save_warning"] = "Authentication required to save readings"
 
     return JSONResponse(content=response_data)
 

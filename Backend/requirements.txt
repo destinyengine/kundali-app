@@ -7,7 +7,13 @@ langchain
 chromadb
 tiktoken
 pyswisseph 
-gradio 
+gradio
+# Database and Authentication Dependencies
+aiosqlite>=0.19.0
+python-jose[cryptography]>=3.3.0
+python-multipart>=0.0.6
+bcrypt>=4.0.1
+python-dotenv>=1.0.0 
 nepali-datetime 
 langchain_community
 langchain_ollama
