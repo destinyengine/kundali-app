@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Moon, Sun, Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth/AuthButton";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -36,6 +37,7 @@ const Navbar = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="h-10 w-10" /> {/* Placeholder for theme button */}
+            <div className="h-10 w-32" /> {/* Placeholder for auth button */}
           </div>
         </div>
       </nav>
@@ -61,6 +63,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <AuthButton />
           <Button
             variant="ghost"
             size="icon"
