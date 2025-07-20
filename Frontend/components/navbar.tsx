@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Moon, Sun, Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import Web3AuthButton from "@/components/web3/Web3AuthButton";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -61,6 +62,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <Web3AuthButton />
           <Button
             variant="ghost"
             size="icon"
