@@ -35,6 +35,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Web3Auth keys (keep secure)
+.env.web3auth
+
 # Vercel
 .vercel
 

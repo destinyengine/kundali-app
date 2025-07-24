@@ -206,12 +206,29 @@ const KundaliForm = () => {
         chart_img: 'false', // We'll handle charts separately if needed
       });
 
+      // Get backend URL from environment variable
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const apiUrl = `${backendUrl}/kundali?${params.toString()}`;
+      
+      console.log('Making API call to:', apiUrl);
+      console.log('Backend URL from env:', process.env.NEXT_PUBLIC_BACKEND_URL);
+      console.log('NODE_ENV:', process.env.NODE_ENV);
+
       // Make API call to backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/kundali?${params.toString()}`);
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        throw new Error(errorData || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
