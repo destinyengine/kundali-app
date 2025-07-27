@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 interface LocationStepProps {
   birthCity: string;
@@ -21,6 +21,7 @@ const searchLocations = async (query: string): Promise<any[]> => {
   if (!query) return [];
   
   const mockData = [
+    { city: "Philadelphia", country: "United States", lat: 39.9526, lng: -75.1652 },
     { city: "New York", country: "United States", lat: 40.7128, lng: -74.0060 },
     { city: "London", country: "United Kingdom", lat: 51.5074, lng: -0.1278 },
     { city: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 },
@@ -45,9 +46,20 @@ export default function LocationStep({
   errors,
   updateFormData,
 }: LocationStepProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(`${birthCity}${birthCity && birthCountry ? ', ' : ''}${birthCountry}`);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+
+  // Set default location to Philadelphia, USA if no location is provided
+  useEffect(() => {
+    if (!birthCity && !birthCountry && !latitude && !longitude) {
+      updateFormData("birthCity", "Philadelphia");
+      updateFormData("birthCountry", "United States");
+      updateFormData("latitude", 39.9526);
+      updateFormData("longitude", -75.1652);
+      setSearchQuery("Philadelphia, United States");
+    }
+  }, []);
 
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
@@ -77,87 +89,49 @@ export default function LocationStep({
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Birth Location</h2>
       <p className="text-muted-foreground">
-        Please enter the city and country where you were born.
+        Please enter your place of birth. Default location is set to Philadelphia, USA.
       </p>
       
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="locationSearch">Search for your birth location</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="locationSearch"
-              type="text"
-              placeholder="Search city or country..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-            
-            {/* Search results dropdown */}
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-card rounded-md shadow-lg max-h-60 overflow-auto border">
-                {searchResults.map((location, index) => (
-                  <div
-                    key={index}
-                    className="p-3 cursor-pointer hover:bg-muted flex items-center"
-                    onClick={() => handleLocationSelect(location)}
-                  >
-                    <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
-                    <span>{location.city}, {location.country}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {searching && (
-              <div className="absolute z-10 w-full mt-1 bg-card rounded-md shadow-lg p-3 text-center border">
-                Searching...
-              </div>
-            )}
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="placeOfBirth">Place of Birth</Label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="placeOfBirth"
+            type="text"
+            placeholder="Enter city, state, country..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`pl-10 ${errors.birthCity || errors.birthCountry ? "border-destructive" : ""}`}
+          />
           
-          <p className="text-sm text-muted-foreground">
-            Enter at least 3 characters to search for locations.
+          {/* Search results dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-card rounded-md shadow-lg max-h-60 overflow-auto border">
+              {searchResults.map((location, index) => (
+                <div
+                  key={index}
+                  className="p-3 cursor-pointer hover:bg-muted flex items-center"
+                  onClick={() => handleLocationSelect(location)}
+                >
+                  <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
+                  <span>{location.city}, {location.country}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {searching && (
+            <div className="absolute z-10 w-full mt-1 bg-card rounded-md shadow-lg p-3 text-center border">
+              Searching...
+            </div>
+          )}
+        </div>
+        
+        {(errors.birthCity || errors.birthCountry) && (
+          <p className="text-sm text-destructive">
+            {errors.birthCity || errors.birthCountry}
           </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="birthCity">City</Label>
-            <Input
-              id="birthCity"
-              type="text"
-              value={birthCity}
-              onChange={(e) => updateFormData("birthCity", e.target.value)}
-              placeholder="City of birth"
-              className={errors.birthCity ? "border-destructive" : ""}
-            />
-            {errors.birthCity && (
-              <p className="text-sm text-destructive">{errors.birthCity}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="birthCountry">Country</Label>
-            <Input
-              id="birthCountry"
-              type="text"
-              value={birthCountry}
-              onChange={(e) => updateFormData("birthCountry", e.target.value)}
-              placeholder="Country of birth"
-              className={errors.birthCountry ? "border-destructive" : ""}
-            />
-            {errors.birthCountry && (
-              <p className="text-sm text-destructive">{errors.birthCountry}</p>
-            )}
-          </div>
-        </div>
-        
-        {latitude && longitude && (
-          <div className="text-sm text-muted-foreground">
-            <p>Coordinates: {latitude.toFixed(4)}, {longitude.toFixed(4)}</p>
-          </div>
         )}
       </div>
     </div>

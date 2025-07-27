@@ -51,8 +51,8 @@ export function LocationMap({
   const [searchQuery, setSearchQuery] = useState(place);
   const [isSearching, setIsSearching] = useState(false);
   const [position, setPosition] = useState<LatLngExpression>([
-    parseFloat(latitude) || 27.7172, // Default to Kathmandu
-    parseFloat(longitude) || 85.3240
+    parseFloat(latitude) || 39.9526, // Default to Philadelphia, USA
+    parseFloat(longitude) || -75.1652
   ]);
 
   const mapRef = useRef<any>(null);
