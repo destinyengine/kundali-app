@@ -27,7 +27,8 @@ interface TimePickerProps {
 
 export function TimePicker({ value = "", onChange, disabled, className }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState<'hour' | 'minute' | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [clockMode, setClockMode] = useState<'hour' | 'minute'>('hour'); // New state for clock mode
   const clockRef = useRef<SVGSVGElement>(null);
 
   // Parse the time value (HH:MM format)
@@ -61,9 +62,13 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
 
   const { hours, minutes, period } = parseTime(value);
 
-  // Calculate angles for clock hands
-  const hourAngle = (hours % 12) * 30 + (minutes * 0.5); // 30 degrees per hour + minute adjustment
-  const minuteAngle = minutes * 6; // 6 degrees per minute
+  // Reset clock mode to hour when opening
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      setClockMode('hour');
+    }
+  };
 
   // Get mouse position relative to clock center
   const getAngleFromCenter = useCallback((clientX: number, clientY: number) => {
@@ -83,8 +88,24 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
   }, []);
 
   // Handle mouse interactions
-  const handleMouseDown = (type: 'hour' | 'minute') => {
-    setIsDragging(type);
+  const handleClockClick = (clientX: number, clientY: number) => {
+    const angle = getAngleFromCenter(clientX, clientY);
+    
+    if (clockMode === 'hour') {
+      const newHour = Math.round(angle / 30) || 12;
+      const formattedTime = formatTime(newHour, minutes, period);
+      onChange?.(formattedTime);
+      // Don't auto-switch during drag - only on release
+    } else if (clockMode === 'minute') {
+      const newMinute = Math.round(angle / 6) % 60;
+      const formattedTime = formatTime(hours, newMinute, period);
+      onChange?.(formattedTime);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    handleClockClick(e.clientX, e.clientY);
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -92,20 +113,24 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
     
     const angle = getAngleFromCenter(e.clientX, e.clientY);
     
-    if (isDragging === 'hour') {
+    if (clockMode === 'hour') {
       const newHour = Math.round(angle / 30) || 12;
       const formattedTime = formatTime(newHour, minutes, period);
       onChange?.(formattedTime);
-    } else if (isDragging === 'minute') {
+    } else if (clockMode === 'minute') {
       const newMinute = Math.round(angle / 6) % 60;
       const formattedTime = formatTime(hours, newMinute, period);
       onChange?.(formattedTime);
     }
-  }, [isDragging, getAngleFromCenter, hours, minutes, period, onChange]);
+  }, [isDragging, getAngleFromCenter, clockMode, hours, minutes, period, onChange]);
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(null);
-  }, []);
+    if (isDragging && clockMode === 'hour') {
+      // Auto-switch to minute selection after hour is selected and mouse is released
+      setTimeout(() => setClockMode('minute'), 300);
+    }
+    setIsDragging(false);
+  }, [isDragging, clockMode]);
 
   // Add global mouse event listeners
   useEffect(() => {
@@ -129,20 +154,50 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
     handleTimeChange(hours, minutes, newPeriod);
   };
 
-  // Clock numbers
-  const clockNumbers = Array.from({ length: 12 }, (_, i) => {
-    const number = i === 0 ? 12 : i;
-    const angle = i * 30;
-    const radius = 85;
-    const x = 120 + radius * Math.cos((angle - 90) * Math.PI / 180);
-    const y = 120 + radius * Math.sin((angle - 90) * Math.PI / 180);
-    
-    return { number, x, y };
-  });
+  // Clock numbers - different for hour and minute modes
+  const getClockNumbers = () => {
+    if (clockMode === 'hour') {
+      return Array.from({ length: 12 }, (_, i) => {
+        const number = i === 0 ? 12 : i;
+        const angle = i * 30;
+        const radius = 85;
+        const x = 120 + radius * Math.cos((angle - 90) * Math.PI / 180);
+        const y = 120 + radius * Math.sin((angle - 90) * Math.PI / 180);
+        return { number, x, y, angle };
+      });
+    } else {
+      // Minute mode - show 00, 05, 10, 15, etc.
+      return Array.from({ length: 12 }, (_, i) => {
+        const number = i * 5;
+        const angle = i * 30;
+        const radius = 85;
+        const x = 120 + radius * Math.cos((angle - 90) * Math.PI / 180);
+        const y = 120 + radius * Math.sin((angle - 90) * Math.PI / 180);
+        return { number: number.toString().padStart(2, '0'), x, y, angle };
+      });
+    }
+  };
+
+  // Get the current hand angle and length
+  const getCurrentHand = () => {
+    if (clockMode === 'hour') {
+      return {
+        angle: (hours % 12) * 30 + (minutes * 0.5),
+        length: 60,
+        strokeWidth: 4
+      };
+    } else {
+      return {
+        angle: minutes * 6,
+        length: 80,
+        strokeWidth: 2
+      };
+    }
+  };
 
   return (
     <div className={cn("space-y-2", className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -174,8 +229,33 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
               <div className="text-lg font-semibold">
                 {hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}
               </div>
-              <div className="text-sm text-muted-foreground">
-                {period}
+              <div className="text-sm text-muted-foreground mb-2">
+                Select {clockMode}
+              </div>
+              <div className="flex gap-2 justify-center">
+                <Button
+                  variant={clockMode === 'hour' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setClockMode('hour')}
+                >
+                  Hour
+                </Button>
+                <Button
+                  variant={clockMode === 'minute' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setClockMode('minute')}
+                >
+                  Minute
+                </Button>
+                <Select value={period} onValueChange={handlePeriodChange}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -188,6 +268,7 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
                   height="240"
                   className="cursor-pointer select-none"
                   style={{ userSelect: 'none' }}
+                  onMouseDown={handleMouseDown}
                 >
                   {/* Clock circle */}
                   <circle
@@ -200,7 +281,7 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
                     className="text-border"
                   />
                   
-                  {/* Hour markers */}
+                  {/* Hour/Minute markers */}
                   {Array.from({ length: 12 }, (_, i) => {
                     const angle = i * 30;
                     const innerRadius = 95;
@@ -225,45 +306,48 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
                   })}
 
                   {/* Numbers */}
-                  {clockNumbers.map(({ number, x, y }) => (
+                  {getClockNumbers().map(({ number, x, y }, index) => (
                     <text
-                      key={number}
+                      key={index}
                       x={x}
                       y={y}
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      className="text-sm font-medium fill-current cursor-pointer hover:text-primary"
-                      onClick={() => handleTimeChange(number, minutes, period)}
+                      className={`text-sm font-medium fill-current cursor-pointer hover:text-primary ${
+                        clockMode === 'hour' 
+                          ? (number === hours ? 'text-primary font-bold' : '') 
+                          : (parseInt(number.toString()) === minutes ? 'text-primary font-bold' : '')
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (clockMode === 'hour') {
+                          handleTimeChange(typeof number === 'string' ? parseInt(number) : number, minutes, period);
+                          setTimeout(() => setClockMode('minute'), 300);
+                        } else {
+                          handleTimeChange(hours, typeof number === 'string' ? parseInt(number) : number, period);
+                        }
+                      }}
                     >
                       {number}
                     </text>
                   ))}
 
-                  {/* Hour hand */}
-                  <line
-                    x1="120"
-                    y1="120"
-                    x2={120 + 60 * Math.cos((hourAngle - 90) * Math.PI / 180)}
-                    y2={120 + 60 * Math.sin((hourAngle - 90) * Math.PI / 180)}
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    className="text-primary cursor-pointer"
-                    onMouseDown={() => handleMouseDown('hour')}
-                  />
-
-                  {/* Minute hand */}
-                  <line
-                    x1="120"
-                    y1="120"
-                    x2={120 + 80 * Math.cos((minuteAngle - 90) * Math.PI / 180)}
-                    y2={120 + 80 * Math.sin((minuteAngle - 90) * Math.PI / 180)}
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    className="text-secondary-foreground cursor-pointer"
-                    onMouseDown={() => handleMouseDown('minute')}
-                  />
+                  {/* Single hand based on current mode */}
+                  {(() => {
+                    const { angle, length, strokeWidth } = getCurrentHand();
+                    return (
+                      <line
+                        x1="120"
+                        y1="120"
+                        x2={120 + length * Math.cos((angle - 90) * Math.PI / 180)}
+                        y2={120 + length * Math.sin((angle - 90) * Math.PI / 180)}
+                        stroke="currentColor"
+                        strokeWidth={strokeWidth}
+                        strokeLinecap="round"
+                        className="text-primary cursor-pointer"
+                      />
+                    );
+                  })()}
 
                   {/* Center dot */}
                   <circle
@@ -275,20 +359,6 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
                   />
                 </svg>
               </div>
-            </div>
-
-            {/* AM/PM Selector */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Period</Label>
-              <Select value={period} onValueChange={handlePeriodChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AM">AM</SelectItem>
-                  <SelectItem value="PM">PM</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Quick time presets */}
