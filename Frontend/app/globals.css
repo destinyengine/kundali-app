@@ -89,3 +89,17 @@
   );
   background-size: 50px 50px;
 }
+
+/* Ensure modals always appear above Leaflet maps */
+.leaflet-container {
+  z-index: 1 !important;
+}
+
+.leaflet-control-container {
+  z-index: 2 !important;
+}
+
+/* Force modal overlay and content to be on top */
+[data-radix-portal] {
+  z-index: 9999 !important;
+}

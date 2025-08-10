@@ -48,6 +48,7 @@ const LocationMap = dynamic(
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import KundaliResults from "@/components/kundali/kundali-results";
+import { ContinueModal } from "@/components/kundali/continue-modal";
 
 const timezones = [
   "UTC-12:00",
@@ -109,6 +110,8 @@ const KundaliForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [kundaliData, setKundaliData] = useState<any>(null);
+  const [showContinueModal, setShowContinueModal] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -179,7 +182,6 @@ const KundaliForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -188,22 +190,40 @@ const KundaliForm = () => {
         throw new Error("Please fill in all required fields");
       }
 
+      // Store form data and show modal
+      setPendingFormData(formData);
+      setShowContinueModal(true);
+      
+    } catch (err) {
+      console.error("Form validation error:", err);
+      setError(err instanceof Error ? err.message : "Please check your form data");
+    }
+  };
+
+  const handleContinueWithKundali = async (method: 'wallet' | 'guest') => {
+    if (!pendingFormData) return;
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
       // Format date as YYYY-MM-DD
-      const dateStr = formData.date.toISOString().split('T')[0];
+      const dateStr = pendingFormData.date.toISOString().split('T')[0];
       
       // Convert timezone to IANA format
-      const tzName = convertTimezoneToIANA(formData.timezone);
+      const tzName = convertTimezoneToIANA(pendingFormData.timezone);
 
       // Build API URL with query parameters
       const params = new URLSearchParams({
-        calendar: formData.isBS ? 'bs' : 'ad',
+        calendar: pendingFormData.isBS ? 'bs' : 'ad',
         date: dateStr,
-        time: formData.time,
-        lat: formData.latitude.toString(),
-        lon: formData.longitude.toString(),
+        time: pendingFormData.time,
+        lat: pendingFormData.latitude.toString(),
+        lon: pendingFormData.longitude.toString(),
         tz: tzName,
-        lang: formData.language === 'english' ? 'en' : 'ne',
+        lang: pendingFormData.language === 'english' ? 'en' : 'ne',
         chart_img: 'false', // We'll handle charts separately if needed
+        auth_method: method, // Track how user chose to continue
       });
 
       // Make API call to backend
@@ -224,6 +244,7 @@ const KundaliForm = () => {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
+      setPendingFormData(null);
     }
   };
 
@@ -478,6 +499,12 @@ const KundaliForm = () => {
           <KundaliResults formData={formData} kundaliData={kundaliData} />
         </div>
       )}
+
+      <ContinueModal
+        open={showContinueModal}
+        onOpenChange={setShowContinueModal}
+        onContinue={handleContinueWithKundali}
+      />
     </div>
   );
 };

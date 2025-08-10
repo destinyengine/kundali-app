@@ -29,6 +29,7 @@ interface LocationMapProps {
     place: string;
   }) => void;
   className?: string;
+  modalOpen?: boolean; // New prop to handle modal state
 }
 
 // Component to handle map clicks
