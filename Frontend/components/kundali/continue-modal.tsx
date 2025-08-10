@@ -15,6 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
+import { useWeb3AuthConnect, useWeb3Auth } from "@web3auth/modal/react";
+import { useAccount } from "wagmi";
 
 interface ContinueModalProps {
   open: boolean;
@@ -24,10 +26,36 @@ interface ContinueModalProps {
 
 export function ContinueModal({ open, onOpenChange, onContinue }: ContinueModalProps) {
   const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  
+  const { connect } = useWeb3AuthConnect();
+  const { isConnected: web3AuthConnected } = useWeb3Auth();
+  const { address, isConnected } = useAccount();
 
-  const handleWalletConnect = () => {
-    onContinue('wallet');
-    onOpenChange(false);
+  const handleWalletConnect = async () => {
+    try {
+      setIsConnecting(true);
+      
+      // Close the popup first
+      onOpenChange(false);
+      
+      // If already connected, proceed with the flow
+      if (isConnected || web3AuthConnected) {
+        onContinue('wallet');
+        return;
+      }
+      
+      // Otherwise, initiate wallet connection (this will open the Web3Auth modal)
+      await connect();
+      
+      // After successful connection, proceed with the flow
+      onContinue('wallet');
+    } catch (error) {
+      console.error("Wallet connection failed:", error);
+      // You might want to show an error toast here
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   const handleGuestContinue = () => {
@@ -43,7 +71,7 @@ export function ContinueModal({ open, onOpenChange, onContinue }: ContinueModalP
         
         {/* Custom content with higher z-index and better styling */}
         <DialogPrimitive.Content className={cn(
-          'fixed left-[50%] top-[50%] z-[100] grid w-full max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg'
+          'fixed left-[50%] top-[50%] z-[100] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg'
         )}>
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
             <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,11 +91,19 @@ export function ContinueModal({ open, onOpenChange, onContinue }: ContinueModalP
             {/* Connect Wallet Button */}
             <Button
               onClick={handleWalletConnect}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 h-auto text-base font-medium rounded-lg"
+              disabled={isConnecting}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 h-auto text-base font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Wallet className="mr-2 h-5 w-5" />
-              Connect Wallet
+              {isConnecting ? "Connecting..." : (isConnected || web3AuthConnected) ? "Connected - Continue" : "Connect Wallet"}
             </Button>
+
+            {/* Show connected wallet address if connected */}
+            {(isConnected || web3AuthConnected) && address && (
+              <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+                Connected: {address.slice(0, 6)}...{address.slice(-4)}
+              </div>
+            )}
 
             {/* Keep me signed in checkbox */}
             <div className="flex items-center justify-between">
