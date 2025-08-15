@@ -250,181 +250,169 @@ const KundaliForm = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="space-y-6">
-          {/* Personal Information */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center text-xl font-semibold">
-              <BookOpen className="mr-2 h-5 w-5 text-amber-500" />
-              Personal Information
-            </h2>
-            <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Main content area with side-by-side layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Personal Info & Birth Date/Time */}
+          <div className="space-y-6">
+            {/* Personal Information */}
+            <div className="rounded-lg border bg-card p-4 shadow-sm">
+              <h2 className="mb-3 flex items-center text-lg font-semibold">
+                <BookOpen className="mr-2 h-4 w-4 text-amber-500" />
+                Personal Information
+              </h2>
               <div>
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-sm">Full Name</Label>
                 <Input
                   id="name"
                   placeholder="Enter your full name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   required
+                  className="mt-1"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Birth Date and Time */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center text-xl font-semibold">
-              <CalendarIcon className="mr-2 h-5 w-5 text-amber-500" />
-              Birth Date and Time
-            </h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Birth Date and Time */}
+            <div className="rounded-lg border bg-card p-4 shadow-sm">
+              <h2 className="mb-3 flex items-center text-lg font-semibold">
+                <CalendarIcon className="mr-2 h-4 w-4 text-amber-500" />
+                Birth Date and Time
+              </h2>
+              <div className="space-y-4">
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Date of Birth</Label>
-                  <div className="space-y-3">
-                    <EnhancedDatePicker
-                      date={formData.date}
-                      onDateChange={(date: Date | undefined) => handleInputChange("date", date)}
-                      placeholder="Select your birth date"
-                      isBS={formData.isBS}
-                    />
-                    <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
-                      <div className="flex items-center space-x-2">
-                        <CalendarIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <div className="text-sm">
-                          <span className="font-medium text-amber-800 dark:text-amber-200">
-                            Calendar Type: 
-                          </span>
-                          <span className="ml-1 text-amber-700 dark:text-amber-300">
-                            {formData.isBS ? "Bikram Sambat (BS)" : "Gregorian (AD)"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="calendar-type" className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                          {formData.isBS ? "BS" : "AD"}
-                        </Label>
-                        <Switch
-                          id="calendar-type"
-                          checked={formData.isBS}
-                          onCheckedChange={(checked: boolean) =>
-                            handleInputChange("isBS", checked)
-                          }
-                        />
-                      </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <EnhancedDatePicker
+                        date={formData.date}
+                        onDateChange={(date: Date | undefined) => handleInputChange("date", date)}
+                        placeholder="Select your birth date"
+                        isBS={formData.isBS}
+                      />
                     </div>
-                    {formData.isBS && (
-                      <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-950/20">
-                        <p className="text-xs text-blue-700 dark:text-blue-300">
-                          <strong>Note:</strong> Bikram Sambat is the traditional Nepali calendar system. 
-                          The date you enter will be converted automatically for astrological calculations.
-                        </p>
-                      </div>
-                    )}
+                    <div className="flex items-center space-x-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 dark:border-amber-800 dark:bg-amber-950/20">
+                      <Label htmlFor="calendar-type" className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                        Calendar Type
+                      </Label>
+                      <Switch
+                        id="calendar-type"
+                        checked={formData.isBS}
+                        onCheckedChange={(checked: boolean) =>
+                          handleInputChange("isBS", checked)
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label htmlFor="time" className="text-sm font-medium">Time of Birth</Label>
-                  <div className="space-y-3">
-                    <TimePicker
-                      value={formData.time}
-                      onChange={(time) => handleInputChange("time", time)}
-                    />
-                    <div className="rounded-md bg-green-50 p-3 dark:bg-green-950/20">
-                      <p className="text-xs text-green-700 dark:text-green-300">
-                        <strong>Tip:</strong> Enter the exact time of birth if known. 
-                        If unknown, 6:00 AM is commonly used as a default for astrological calculations.
-                      </p>
-                    </div>
+                  <TimePicker
+                    value={formData.time}
+                    onChange={(time) => handleInputChange("time", time)}
+                  />
+                  <div className="rounded-md bg-green-50 p-2 dark:bg-green-950/20">
+                    <p className="text-xs text-green-700 dark:text-green-300">
+                      <strong>Tip:</strong> Enter the exact time of birth if known. 
+                      If unknown, 6:00 AM is commonly used as a default for astrological calculations.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Birth Location */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center text-xl font-semibold">
-              <MapPin className="mr-2 h-5 w-5 text-amber-500" />
+          {/* Right Column - Birth Location */}
+          <div className="rounded-lg border bg-card p-4 shadow-sm">
+            <h2 className="mb-3 flex items-center text-lg font-semibold">
+              <MapPin className="mr-2 h-4 w-4 text-amber-500" />
               Birth Location
             </h2>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="place">Place of Birth</Label>
+                <Label htmlFor="place" className="text-sm">Search Location</Label>
                 <Input
                   id="place"
-                  placeholder="Search for a city or location using the map below"
+                  placeholder="Search for a city, landmark, or address..."
                   value={formData.place}
                   onChange={(e) => handleInputChange("place", e.target.value)}
                   required
+                  className="mt-1"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Use the interactive map below to search and select your exact birth location
-                </p>
               </div>
 
-              {/* Map for location selection */}
-              <LocationMap
-                latitude={formData.latitude}
-                longitude={formData.longitude}
-                place={formData.place}
-                onLocationChange={(location) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    latitude: location.latitude,
-                    longitude: location.longitude,
-                    place: location.place
-                  }));
-                }}
-              />
+              {/* Compact Map */}
+              <div className="h-[250px]">
+                <LocationMap
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  place={formData.place}
+                  onLocationChange={(location) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                      place: location.place
+                    }));
+                  }}
+                />
+              </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    placeholder="e.g., 27.7172"
-                    value={formData.latitude}
-                    onChange={(e) =>
-                      handleInputChange("latitude", e.target.value)
-                    }
-                    required
-                    className="font-mono text-sm"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Auto-filled from map selection
-                  </p>
+              {/* Location Details in a compact grid */}
+              <div className="space-y-3">
+                <div className="text-sm font-medium">Place of Birth</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Search for a city/location using the map below
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      placeholder="e.g., 27.7172"
+                      value={formData.latitude}
+                      onChange={(e) =>
+                        handleInputChange("latitude", e.target.value)
+                      }
+                      required
+                      className="font-mono text-xs h-8"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Auto-filled from map selection
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      placeholder="e.g., 85.3240"
+                      value={formData.longitude}
+                      onChange={(e) =>
+                        handleInputChange("longitude", e.target.value)
+                      }
+                      required
+                      className="font-mono text-xs h-8"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Auto-filled from map selection
+                    </p>
+                  </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    placeholder="e.g., 85.3240"
-                    value={formData.longitude}
-                    onChange={(e) =>
-                      handleInputChange("longitude", e.target.value)
-                    }
-                    required
-                    className="font-mono text-sm"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Auto-filled from map selection
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="timezone">Timezone</Label>
+                  <Label htmlFor="timezone" className="text-xs">Timezone</Label>
                   <Select
                     value={formData.timezone}
                     onValueChange={(value: string) =>
                       handleInputChange("timezone", value)
                     }
                   >
-                    <SelectTrigger id="timezone">
-                      <SelectValue placeholder="Select timezone" />
+                    <SelectTrigger id="timezone" className="h-8 text-xs">
+                      <SelectValue placeholder="UTC+05:45" />
                     </SelectTrigger>
                     <SelectContent>
                       {timezones.map((tz) => (
@@ -436,26 +424,37 @@ const KundaliForm = () => {
                   </Select>
                 </div>
               </div>
+
+              {/* Map Tips */}
+              <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-950/20">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  • Search for your birth location using the search box above - Click anywhere on the map to set your exact birth location 
+                  • Use the crosshair button to get your current location. The coordinates will be automatically filled in the form.
+                </p>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Output Options */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center text-xl font-semibold">
-              <Sparkles className="mr-2 h-5 w-5 text-amber-500" />
-              Output Options
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="language">Output Language</Label>
+        {/* Output Options - Full width at bottom */}
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h2 className="flex items-center text-lg font-semibold">
+                <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
+                Output Options :
+              </h2>
+              
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="language" className="text-sm">Language</Label>
                 <Select
                   value={formData.language}
                   onValueChange={(value: string) =>
                     handleInputChange("language", value)
                   }
                 >
-                  <SelectTrigger id="language" className="w-full">
-                    <SelectValue placeholder="Select language" />
+                  <SelectTrigger id="language" className="w-32 h-8">
+                    <SelectValue placeholder="Language" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="english">English</SelectItem>
@@ -472,9 +471,18 @@ const KundaliForm = () => {
                     handleInputChange("showChart", checked)
                   }
                 />
-                <Label htmlFor="show-chart">Show Kundali Chart</Label>
+                <Label htmlFor="show-chart" className="text-sm">Show Kundali Chart</Label>
               </div>
             </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 disabled:opacity-50 px-8"
+              size="lg"
+            >
+              {isLoading ? "Generating..." : "Generate Kundali"}
+            </Button>
           </div>
         </div>
 
@@ -483,19 +491,10 @@ const KundaliForm = () => {
             <p className="text-sm">{error}</p>
           </div>
         )}
-
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 disabled:opacity-50"
-          size="lg"
-        >
-          {isLoading ? "Generating..." : "Generate Kundali"}
-        </Button>
       </form>
 
       {isSubmitted && kundaliData && (
-        <div className="mt-12">
+        <div className="mt-8">
           <KundaliResults formData={formData} kundaliData={kundaliData} />
         </div>
       )}
