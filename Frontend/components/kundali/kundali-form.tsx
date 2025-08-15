@@ -331,18 +331,6 @@ const KundaliForm = () => {
               Birth Location
             </h2>
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="place" className="text-sm">Search Location</Label>
-                <Input
-                  id="place"
-                  placeholder="Search for a city, landmark, or address..."
-                  value={formData.place}
-                  onChange={(e) => handleInputChange("place", e.target.value)}
-                  required
-                  className="mt-1"
-                />
-              </div>
-
               {/* Compact Map */}
               <div className="h-[250px]">
                 <LocationMap
@@ -360,77 +348,17 @@ const KundaliForm = () => {
                 />
               </div>
 
-              {/* Location Details in a compact grid */}
-              <div className="space-y-3">
-                <div className="text-sm font-medium">Place of Birth</div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  Search for a city/location using the map below
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
-                    <Input
-                      id="latitude"
-                      placeholder="e.g., 27.7172"
-                      value={formData.latitude}
-                      onChange={(e) =>
-                        handleInputChange("latitude", e.target.value)
-                      }
-                      required
-                      className="font-mono text-xs h-8"
-                    />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Auto-filled from map selection
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
-                    <Input
-                      id="longitude"
-                      placeholder="e.g., 85.3240"
-                      value={formData.longitude}
-                      onChange={(e) =>
-                        handleInputChange("longitude", e.target.value)
-                      }
-                      required
-                      className="font-mono text-xs h-8"
-                    />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Auto-filled from map selection
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="timezone" className="text-xs">Timezone</Label>
-                  <Select
-                    value={formData.timezone}
-                    onValueChange={(value: string) =>
-                      handleInputChange("timezone", value)
-                    }
-                  >
-                    <SelectTrigger id="timezone" className="h-8 text-xs">
-                      <SelectValue placeholder="UTC+05:45" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timezones.map((tz) => (
-                        <SelectItem key={tz} value={tz}>
-                          {tz}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Map Tips */}
-              <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-950/20">
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  • Search for your birth location using the search box above - Click anywhere on the map to set your exact birth location 
-                  • Use the crosshair button to get your current location. The coordinates will be automatically filled in the form.
-                </p>
+              {/* Single Search Input */}
+              <div>
+                <Label htmlFor="place" className="text-sm">Search Location</Label>
+                <Input
+                  id="place"
+                  placeholder="Search for a city, landmark, or address..."
+                  value={formData.place}
+                  onChange={(e) => handleInputChange("place", e.target.value)}
+                  required
+                  className="mt-1"
+                />
               </div>
             </div>
           </div>
