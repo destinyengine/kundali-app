@@ -366,7 +366,7 @@ const KundaliForm = () => {
             </h2>
             <div>
               {/* Responsive Map */}
-              <div className="h-[300px] sm:h-[350px] md:h-[400px] lg:h-[480px] rounded-lg overflow-hidden">
+              <div className="h-[362px] sm:h-[412px] md:h-[462px] lg:h-[482px] xl:h-[442px] rounded-lg overflow-hidden">
                 <LocationMap
                   latitude={formData.latitude}
                   longitude={formData.longitude}
