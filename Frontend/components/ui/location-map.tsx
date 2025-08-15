@@ -228,36 +228,6 @@ export function LocationMap({
           <MapClickHandler onMapClick={handleMapClick} />
         </MapContainer>
       </div>
-
-      {/* Instructions */}
-      <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-950/20">
-        <p className="text-xs text-blue-700 dark:text-blue-300">
-          <strong>How to use:</strong>
-          <br />
-          • Search for your birth location using the search box above
-          • Click anywhere on the map to set your exact birth location
-          • Use the crosshair button to get your current location
-          <br />
-          The coordinates will be automatically filled in the form.
-        </p>
-      </div>
-
-      {/* Current Coordinates Display */}
-      {latitude && longitude && (
-        <div className="rounded-md bg-green-50 p-3 dark:bg-green-950/20">
-          <p className="text-xs text-green-700 dark:text-green-300">
-            <strong>Selected Location:</strong>
-            <br />
-            Latitude: {latitude}° • Longitude: {longitude}°
-            {place && (
-              <>
-                <br />
-                Place: {place}
-              </>
-            )}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

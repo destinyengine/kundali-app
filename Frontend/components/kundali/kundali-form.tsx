@@ -293,9 +293,9 @@ const KundaliForm = () => {
                       />
                     </div>
                     <div className="flex items-center space-x-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 dark:border-amber-800 dark:bg-amber-950/20">
-                      <Label htmlFor="calendar-type" className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                        Calendar Type
-                      </Label>
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                        {formData.isBS ? 'BS' : 'AD'}
+                      </span>
                       <Switch
                         id="calendar-type"
                         checked={formData.isBS}
@@ -303,6 +303,9 @@ const KundaliForm = () => {
                           handleInputChange("isBS", checked)
                         }
                       />
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                        {formData.isBS ? 'AD' : 'BS'}
+                      </span>
                     </div>
                   </div>
                 </div>
