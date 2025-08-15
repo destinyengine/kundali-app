@@ -628,67 +628,6 @@ export function EnhancedDatePicker({
               </div>
             </div>
 
-            {/* Quick date selections */}
-            <div className="space-y-2 pt-2 border-t">
-              <Label className="text-xs font-medium">Quick Select</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => {
-                    onDateChange(new Date());
-                    setIsOpen(false);
-                  }}
-                >
-                  {isBS ? 'आज' : 'Today'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    onDateChange(yesterday);
-                    setIsOpen(false);
-                  }}
-                >
-                  {isBS ? 'हिजो' : 'Yesterday'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => {
-                    const lastWeek = new Date();
-                    lastWeek.setDate(lastWeek.getDate() - 7);
-                    onDateChange(lastWeek);
-                    setIsOpen(false);
-                  }}
-                >
-                  {isBS ? 'गत हप्ता' : 'Last Week'}
-                </Button>
-              </div>
-              
-              {/* Nepali calendar info */}
-              {isBS && (
-                <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted/50 rounded space-y-1">
-                  <div>
-                    <strong>नोट:</strong> नेपाली क्यालेन्डरमा प्रत्येक महिनामा फरक-फरक दिनहरू हुन्छन्।
-                  </div>
-                  {date && (
-                    <div className="text-xs opacity-75">
-                      AD: {date.toLocaleDateString('en-GB')} | BS: {(() => {
-                        const bs = adToBs(date);
-                        return `${convertToNepali(bs.day)}/${convertToNepali(bs.month + 1)}/${convertToNepali(bs.year)}`;
-                      })()}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
             {/* Action buttons */}
             <div className="flex justify-between gap-2 pt-2 border-t">
               <Button 

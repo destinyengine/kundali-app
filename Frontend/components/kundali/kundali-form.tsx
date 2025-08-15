@@ -316,12 +316,6 @@ const KundaliForm = () => {
                     value={formData.time}
                     onChange={(time) => handleInputChange("time", time)}
                   />
-                  <div className="rounded-md bg-green-50 p-2 dark:bg-green-950/20">
-                    <p className="text-xs text-green-700 dark:text-green-300">
-                      <strong>Tip:</strong> Enter the exact time of birth if known. 
-                      If unknown, 6:00 AM is commonly used as a default for astrological calculations.
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>

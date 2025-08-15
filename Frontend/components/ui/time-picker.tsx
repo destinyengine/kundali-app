@@ -361,30 +361,6 @@ export function TimePicker({ value = "", onChange, disabled, className }: TimePi
               </div>
             </div>
 
-            {/* Quick time presets */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Quick Select</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "6:00 AM", value: "06:00" },
-                  { label: "12:00 PM", value: "12:00" },
-                  { label: "6:00 PM", value: "18:00" },
-                  { label: "12:00 AM", value: "00:00" },
-                ].map((preset) => (
-                  <Button
-                    key={preset.value}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => onChange?.(preset.value)}
-                    disabled={disabled}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
             <div className="flex justify-between gap-2 pt-4 border-t">
               <Button 
                 variant="outline" 
