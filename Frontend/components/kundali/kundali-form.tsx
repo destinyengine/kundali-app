@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Switch } from "@/components/ui/switch";
+import { ModernToggle } from "@/components/ui/modern-toggle";
 
 // Dynamic import for LocationMap to handle SSR issues with Leaflet
 const LocationMap = dynamic(
@@ -292,20 +293,15 @@ const KundaliForm = () => {
                         isBS={formData.isBS}
                       />
                     </div>
-                    <div className="flex items-center space-x-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 dark:border-amber-800 dark:bg-amber-950/20">
-                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                        {formData.isBS ? 'BS' : 'AD'}
-                      </span>
-                      <Switch
-                        id="calendar-type"
+                    <div className="flex items-center justify-center">
+                      <ModernToggle
                         checked={formData.isBS}
                         onCheckedChange={(checked: boolean) =>
                           handleInputChange("isBS", checked)
                         }
+                        leftLabel="AD"
+                        rightLabel="BS"
                       />
-                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                        {formData.isBS ? 'AD' : 'BS'}
-                      </span>
                     </div>
                   </div>
                 </div>
