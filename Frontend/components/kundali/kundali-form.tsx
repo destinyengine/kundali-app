@@ -251,14 +251,14 @@ const KundaliForm = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Main content area with side-by-side layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+        {/* Main content area with responsive layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {/* Left Column - Personal Info & Birth Date/Time */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Personal Information */}
-            <div className="rounded-lg border bg-card p-4 shadow-sm">
-              <h2 className="mb-3 flex items-center text-lg font-semibold">
+            <div className="rounded-lg border bg-card p-3 md:p-4 shadow-sm">
+              <h2 className="mb-3 flex items-center text-base md:text-lg font-semibold">
                 <BookOpen className="mr-2 h-4 w-4 text-amber-500" />
                 Personal Information
               </h2>
@@ -270,21 +270,21 @@ const KundaliForm = () => {
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   required
-                  className="mt-1"
+                  className="mt-1 h-10 md:h-11"
                 />
               </div>
             </div>
 
             {/* Birth Date and Time */}
-            <div className="rounded-lg border bg-card p-4 shadow-sm">
-              <h2 className="mb-3 flex items-center text-lg font-semibold">
+            <div className="rounded-lg border bg-card p-3 md:p-4 shadow-sm">
+              <h2 className="mb-3 flex items-center text-base md:text-lg font-semibold">
                 <CalendarIcon className="mr-2 h-4 w-4 text-amber-500" />
                 Birth Date and Time
               </h2>
               <div className="space-y-4">
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Date of Birth</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
                     <div className="flex-1">
                       <EnhancedDatePicker
                         date={formData.date}
@@ -293,7 +293,7 @@ const KundaliForm = () => {
                         isBS={formData.isBS}
                       />
                     </div>
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center sm:justify-start">
                       <ModernToggle
                         checked={formData.isBS}
                         onCheckedChange={(checked: boolean) =>
@@ -315,17 +315,58 @@ const KundaliForm = () => {
                 </div>
               </div>
             </div>
+
+            {/* Output Options */}
+            <div className="rounded-lg border bg-card p-3 md:p-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h2 className="flex items-center text-base md:text-lg font-semibold">
+                  <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
+                  Output Options :
+                </h2>
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="language" className="text-sm whitespace-nowrap">Language</Label>
+                    <Select
+                      value={formData.language}
+                      onValueChange={(value: string) =>
+                        handleInputChange("language", value)
+                      }
+                    >
+                      <SelectTrigger id="language" className="w-24 sm:w-32 h-8">
+                        <SelectValue placeholder="Language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="nepali">Nepali</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show-chart"
+                      checked={formData.showChart}
+                      onCheckedChange={(checked: boolean) =>
+                        handleInputChange("showChart", checked)
+                      }
+                    />
+                    <Label htmlFor="show-chart" className="text-sm whitespace-nowrap">Show Kundali Chart</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Birth Location */}
-          <div className="rounded-lg border bg-card p-4 shadow-sm">
-            <h2 className="mb-3 flex items-center text-lg font-semibold">
+          <div className="rounded-lg border bg-card p-3 md:p-4 shadow-sm h-fit">
+            <h2 className="mb-3 flex items-center text-base md:text-lg font-semibold">
               <MapPin className="mr-2 h-4 w-4 text-amber-500" />
               Birth Location
             </h2>
-            <div className="space-y-4">
-              {/* Compact Map */}
-              <div className="h-[250px]">
+            <div>
+              {/* Responsive Map */}
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] lg:h-[480px] rounded-lg overflow-hidden">
                 <LocationMap
                   latitude={formData.latitude}
                   longitude={formData.longitude}
@@ -340,71 +381,20 @@ const KundaliForm = () => {
                   }}
                 />
               </div>
-
-              {/* Single Search Input */}
-              <div>
-                <Label htmlFor="place" className="text-sm">Search Location</Label>
-                <Input
-                  id="place"
-                  placeholder="Search for a city, landmark, or address..."
-                  value={formData.place}
-                  onChange={(e) => handleInputChange("place", e.target.value)}
-                  required
-                  className="mt-1"
-                />
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Output Options - Full width at bottom */}
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h2 className="flex items-center text-lg font-semibold">
-                <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
-                Output Options :
-              </h2>
-              
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="language" className="text-sm">Language</Label>
-                <Select
-                  value={formData.language}
-                  onValueChange={(value: string) =>
-                    handleInputChange("language", value)
-                  }
-                >
-                  <SelectTrigger id="language" className="w-32 h-8">
-                    <SelectValue placeholder="Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="nepali">Nepali</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="show-chart"
-                  checked={formData.showChart}
-                  onCheckedChange={(checked: boolean) =>
-                    handleInputChange("showChart", checked)
-                  }
-                />
-                <Label htmlFor="show-chart" className="text-sm">Show Kundali Chart</Label>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 disabled:opacity-50 px-8"
-              size="lg"
-            >
-              {isLoading ? "Generating..." : "Generate Kundali"}
-            </Button>
-          </div>
+        {/* Centered Generate Button */}
+        <div className="flex justify-center pt-4 md:pt-6">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full sm:w-auto bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 disabled:opacity-50 px-8 md:px-12 py-3 text-base md:text-lg font-semibold"
+            size="lg"
+          >
+            {isLoading ? "Generating..." : "Generate Kundali"}
+          </Button>
         </div>
 
         {error && (
