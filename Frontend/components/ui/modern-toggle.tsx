@@ -40,10 +40,10 @@ export function ModernToggle({
       {/* Background sliding element */}
       <div
         className={cn(
-          "absolute inset-1 w-1/2 rounded-full transition-all duration-300 ease-out",
+          "absolute top-1 bottom-1 w-[calc(50%-2px)] rounded-full transition-all duration-300 ease-out",
           "bg-gradient-to-b from-white to-amber-50 dark:from-amber-600 dark:to-amber-700",
           "shadow-md border border-amber-300 dark:border-amber-500",
-          checked ? "translate-x-full" : "translate-x-0"
+          checked ? "right-1" : "left-1"
         )}
       />
       
@@ -76,11 +76,11 @@ export function ModernToggle({
       {/* Subtle glow effect on active side */}
       <div
         className={cn(
-          "absolute inset-1 w-1/2 rounded-full pointer-events-none transition-all duration-300",
+          "absolute top-1 bottom-1 w-[calc(50%-2px)] rounded-full pointer-events-none transition-all duration-300",
           "bg-gradient-to-b from-amber-400/20 to-amber-600/20",
           "opacity-0",
           isHovered && "opacity-100",
-          checked ? "translate-x-full" : "translate-x-0"
+          checked ? "right-1" : "left-1"
         )}
       />
     </div>
